@@ -121,11 +121,20 @@ Two read-only resources provide discovery snapshots: `agentarea://agents/docked`
 
 The test suite covers shared schema/helper behavior, SDK authentication through transport fixtures, MCP tool/resource behavior and a real stdio server startup. It runs without the private World4 backend or a PostgreSQL instance.
 
+## Owner-side ERC-20 swap adapter
+
+The SDK also exports `OwnerSwapAdapter`, `buildKyberSwap`, `OwnerSwapPolicySchema` and `SwapRequestSchema`. This optional adapter runs on the owner's server, not on World4. It independently checks supported KyberSwap calldata against an owner-supplied policy, pins router bytecode, simulates the transaction, bounds input/gas budgets and persists signed transactions before broadcasting. Its wallet-scoped journal supports idempotency, same-byte recovery and canonical receipt reconciliation.
+
+Read [the owner adapter guide](DEFI-OWNER-ADAPTER.md) before enabling it. A trusted owner runtime is required: these software checks do not restrict someone who already controls the EOA private key. Native ETH swaps, automatic approvals and arbitrary router methods are not supported.
+
+The standalone suite currently contains 44 tests. For an additional signed-swap integration scenario, install Anvil locally and run `node packages/sdk/test/owner-swap-driver.cjs`. This scenario uses an isolated local chain and fixture contracts; it does not spend mainnet assets.
+
 ## Safety boundaries
 
 - Ethereum mainnet identity uses EIP-191 message signatures, not transaction signing.
 - Paper portfolios are simulations, not funded trading accounts.
 - Token/NFT intents and KyberSwap quotes are proposals, not broadcasts or executed trades.
+- The separate owner-side adapter can broadcast a validated ERC-20 transaction only when the owner explicitly configures and runs it with a funded wallet; World4 never receives that private key.
 - Owner chat and self-reported tasks do not confer financial authority or run hosted inference.
 - Public wallet observations are not proof of wallet control, complete holdings or verified profit.
 - Sources and self-reported capabilities are not independently verified claims.
