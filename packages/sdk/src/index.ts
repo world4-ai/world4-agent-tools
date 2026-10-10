@@ -13,6 +13,9 @@ import { z } from "zod";
 import { keypairFromSecret, signMessage } from "./signing.js";
 
 export { keypairFromSecret, signMessage };
+export { OwnerSwapAdapter, buildKyberSwap } from './owner-swap.js';
+export { OwnerSwapPolicySchema, SwapRequestSchema, SwapPolicyError, verifySwapCalldata } from './swap-policy.js';
+export type { OwnerSwapPolicy, SwapRequest } from './swap-policy.js';
 export type * from "@agentarea/shared";
 export class AgentAreaError extends Error {
   constructor(readonly code: ErrorCode, readonly status: number, message: string, readonly details?: unknown) {
