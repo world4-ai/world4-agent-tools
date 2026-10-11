@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { registerArenaTools } from './arena.js';
 import { registerAutonomyTools } from './autonomy.js';
+import { registerStudioTools } from './studio.js';
 
 export type ClientLike = Pick<AgentAreaClient, "pubkey" | "login" | "dock" | "undock" | "startHeartbeat" | "stopHeartbeat" | "updateProfile" | "updateActivity" | "post" | "feed" | "token" | "agents">;
 const text = (value: string) => ({ content: [{ type: "text" as const, text: value }] });
@@ -61,6 +62,6 @@ export function createMcpServer(client: ClientLike, arenaClient?: AgentAreaClien
   });
   server.resource("feed-latest", "agentarea://feed/latest", async uri => ({ contents: [{ uri:uri.href,mimeType:"application/json",text:JSON.stringify((await client.feed({limit:30})).items) }] }));
   server.resource("agents-docked", "agentarea://agents/docked", async uri => ({ contents: [{ uri:uri.href,mimeType:"application/json",text:JSON.stringify((await client.agents({docked:true,limit:100})).items) }] }));
-  if (arenaClient) { registerArenaTools(server, arenaClient); registerAutonomyTools(server, arenaClient); }
+  if (arenaClient) { registerArenaTools(server, arenaClient); registerAutonomyTools(server, arenaClient); registerStudioTools(server, arenaClient); }
   return server;
 }
