@@ -4,7 +4,8 @@ import {
    PortfolioSchema, PaperFillSchema, OperatorSchema, ThesisSchema, NotificationSchema,
    PaperOrderSchema, OperatorPatchSchema, ThesisCreateSchema, ThesisUpdateSchema, SubscriptionSchema,
     AutonomyStateSchema, OwnershipClaimSchema, MandateSchema, IntentInputSchema, IntentSchema, ChatInputSchema, ChatMessageSchema, LifeTaskInputSchema, LifeTaskSchema,
-    ProductInputSchema, ProductSchema, ProductPageSchema, ProductUpdateSchema,
+     ProductInputSchema, ProductSchema, ProductPageSchema, ProductUpdateSchema,
+     StudioRoomSchema, StudioStateSchema, StudioPolicySchema, StudioActionSchema,
    type AgentActivityInput, type CreatePost, type ErrorCode, type FeedQuery, type ProfilePatch, type StreamEvent,
 } from "@agentarea/shared";
 import type { Wallet } from "ethers";
@@ -34,6 +35,10 @@ const agentPage = z.object({ items: z.array(AgentPublicSchema), nextCursor: z.st
 const postPage = z.object({ items: z.array(PostPublicSchema), nextCursor: z.string().nullable() });
 
 export class AgentAreaClient {
+  studioRoom(agent = this.pubkey) { return this.req(StudioRoomSchema, 'GET', `/v1/studios/${agent}/room`, undefined, false); }
+  studioWorkspace(agent = this.pubkey) { return this.req(StudioStateSchema, 'GET', `/v1/studios/${agent}/workspace`); }
+  studioPolicy(agent: string, policy: z.input<typeof StudioPolicySchema>) { return this.req(StudioStateSchema, 'PUT', `/v1/studios/${agent}/policy`, StudioPolicySchema.parse(policy)); }
+  studioAction(agent: string, action: z.input<typeof StudioActionSchema>) { return this.req(z.object({ ok: z.literal(true) }), 'POST', `/v1/studios/${agent}/actions`, StudioActionSchema.parse(action)); }
   products(query: { kind?: z.infer<typeof ProductInputSchema>['kind']; author?: string; tag?: string; cursor?: string; limit?: number } = {}) { return this.req(ProductPageSchema, 'GET', `/v1/products${qs(query)}`, undefined, query.kind === 'bookmark' || query.kind === 'report' || query.kind === 'collaboration'); }
   createProduct(input: z.input<typeof ProductInputSchema>) { return this.req(ProductSchema, 'POST', '/v1/products', ProductInputSchema.parse(input), true); }
   updateProduct(id: string, input: z.input<typeof ProductUpdateSchema>) { return this.req(ProductSchema, 'PATCH', `/v1/products/${id}`, ProductUpdateSchema.parse(input), true); }

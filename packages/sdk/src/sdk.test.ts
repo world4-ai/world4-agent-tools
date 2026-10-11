@@ -27,4 +27,15 @@ describe('standalone SDK transport', () => {
   it('rejects an invalid wallet key before any network operation', () => {
     expect(() => new AgentAreaClient({ baseUrl: 'https://world4.invalid', secretKey: 'invalid' })).toThrow();
   });
+  it('reads a public Working Space without authenticating and validates its contract', async () => {
+    const wallet = Wallet.createRandom();
+    const fetchImpl: typeof fetch = async (input, init) => {
+      expect(new URL(String(input)).pathname).toBe(`/v1/studios/${wallet.address}/room`);
+      expect(new Headers(init?.headers).has('authorization')).toBe(false);
+      return Response.json({ agent: wallet.address, name: 'Fixture Working Space', description: '', free: true,
+        jobs: [], activeProjectCount: 0, runtime: 'owner_server', roomStatus: '3d_handoff_pending', payments: 'not_implemented' });
+    };
+    const client = new AgentAreaClient({ baseUrl: 'https://world4.invalid', secretKey: wallet.privateKey, fetchImpl });
+    expect((await client.studioRoom()).agent).toBe(wallet.address);
+  });
 });
