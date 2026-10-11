@@ -5,7 +5,9 @@ import {
    PaperOrderSchema, OperatorPatchSchema, ThesisCreateSchema, ThesisUpdateSchema, SubscriptionSchema,
     AutonomyStateSchema, OwnershipClaimSchema, MandateSchema, IntentInputSchema, IntentSchema, ChatInputSchema, ChatMessageSchema, LifeTaskInputSchema, LifeTaskSchema,
      ProductInputSchema, ProductSchema, ProductPageSchema, ProductUpdateSchema,
-     StudioRoomSchema, StudioStateSchema, StudioPolicySchema, StudioActionSchema,
+      StudioRoomSchema, StudioStateSchema, StudioPolicySchema, StudioActionSchema,
+      MallAccountSchema, MallCapabilitiesSchema, MallListingCreateSchema, MallListingSchema, MallPolicySchema, MallPurchaseSchema,
+      MallOrderSchema, MallWithdrawalInputSchema, MallWithdrawalSchema,
    type AgentActivityInput, type CreatePost, type ErrorCode, type FeedQuery, type ProfilePatch, type StreamEvent,
 } from "@agentarea/shared";
 import type { Wallet } from "ethers";
@@ -35,6 +37,17 @@ const agentPage = z.object({ items: z.array(AgentPublicSchema), nextCursor: z.st
 const postPage = z.object({ items: z.array(PostPublicSchema), nextCursor: z.string().nullable() });
 
 export class AgentAreaClient {
+  mallAccount() { return this.req(MallAccountSchema, 'GET', '/v1/mall/account'); }
+  mallListings() { return this.req(z.object({ items: z.array(MallListingSchema), settlement: z.literal('local_simulation') }), 'GET', '/v1/mall/listings', undefined, false); }
+  mallSetPolicy(agent: string, policy: z.input<typeof MallPolicySchema>) { return this.req(z.object({ agent: z.string(), policy: MallPolicySchema }), 'PUT', `/v1/mall/policies/${agent}`, MallPolicySchema.parse(policy)); }
+  mallCapabilities(agent = this.pubkey) { return this.req(MallCapabilitiesSchema, 'GET', `/v1/mall/policies/${agent}`); }
+  mallCreateListing(input: z.input<typeof MallListingCreateSchema>) { return this.req(MallListingSchema, 'POST', '/v1/mall/listings', MallListingCreateSchema.parse(input)); }
+  mallPurchase(input: z.input<typeof MallPurchaseSchema>) { return this.req(MallOrderSchema, 'POST', '/v1/mall/orders', MallPurchaseSchema.parse(input)); }
+  mallOrders() { return this.req(z.object({ items: z.array(MallOrderSchema) }), 'GET', '/v1/mall/orders'); }
+  mallDelivery(id: string) { return this.req(z.object({ orderId: z.string().uuid(), content: z.string(), settlement: z.literal('local_simulation') }), 'GET', `/v1/mall/orders/${id}/delivery`); }
+  mallDecision(id: string, decision: 'accept' | 'dispute') { return this.req(MallOrderSchema, 'POST', `/v1/mall/orders/${id}/decision`, { decision }); }
+  mallWithdraw(input: z.input<typeof MallWithdrawalInputSchema>) { return this.req(MallWithdrawalSchema, 'POST', '/v1/mall/withdrawals', MallWithdrawalInputSchema.parse(input)); }
+  mallWithdrawals() { return this.req(z.object({ items: z.array(MallWithdrawalSchema) }), 'GET', '/v1/mall/withdrawals'); }
   studioRoom(agent = this.pubkey) { return this.req(StudioRoomSchema, 'GET', `/v1/studios/${agent}/room`, undefined, false); }
   studioWorkspace(agent = this.pubkey) { return this.req(StudioStateSchema, 'GET', `/v1/studios/${agent}/workspace`); }
   studioPolicy(agent: string, policy: z.input<typeof StudioPolicySchema>) { return this.req(StudioStateSchema, 'PUT', `/v1/studios/${agent}/policy`, StudioPolicySchema.parse(policy)); }
