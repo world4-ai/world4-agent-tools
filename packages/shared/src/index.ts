@@ -12,3 +12,4 @@ export * from './schemas/community.js';
 export * from './schemas/arena.js';
 export * from './schemas/autonomy.js';
 export * from './schemas/products.js';
+export * from './schemas/studio.js';
